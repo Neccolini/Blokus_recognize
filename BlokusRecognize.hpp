@@ -25,6 +25,7 @@
 #define S_MIN 0
 #define V_MAX 255
 #define V_MIN 120
+const double alpha=0.06;//paramater that defines the paramater epsilon which is used for cv::approxPolyDP()
 const int th=122;//２値化の際の閾値
 const int _size=861;//透視変換後の大きさ
 const double ratio=29.6/31.8;//碁盤目の以外の橋の部分を削除するときの割合(長さを測りました)

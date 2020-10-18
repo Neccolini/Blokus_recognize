@@ -17,11 +17,7 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
     cv::Scalar s_max=cv::Scalar(H_MAX, S_MAX, V_MAX);
     cv::Scalar s_min=cv::Scalar(H_MIN, S_MIN, V_MIN);
     cv::inRange(hsv, s_min, s_max, mask);
-    /*
-    input.copyTo(output,mask);
-    cv::cvtColor(output, gray, CV_RGB2GRAY); //グレイスケール
-    cv::threshold(gray,binary,th,255,cv::THRESH_BINARY);//２値化
-    */
+
     //findContours
     vector<vector<cv::Point> > contours;
     vector<cv::Vec4i> hierarchy;
@@ -42,8 +38,8 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
             continue;
         }
         cv::convexHull(contours[i],hull);
-        double epsilon=0.005*cv::arcLength(hull,true);
-        
+        double epsilon=alpha*cv::arcLength(hull,true);
+        printf("rect_vertexes.size():%d\n",(int)rect_vertexes.size());
         cv::approxPolyDP(hull,rect_vertexes,epsilon,true);
 
         }
@@ -73,7 +69,7 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
     int b_width=dst.cols*ratio,b_height=dst.rows*ratio;
     cv::Rect roi(cv::Point(pt_x,pt_y),cv::Size(b_width,b_height));
     board=dst(roi);
-    cv::imwrite("./pictures/help.jpg",img);
+
     cv::Mat board_clone=board.clone();
     /* 縦横をそれぞれ20分割 */
     int split_size=(int)(board.cols/20);
@@ -83,7 +79,7 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
         board_split[yi][xj]=board_clone(roi);
     }
     
-    cv::cvtColor(board_clone,board_clone,CV_BGR2HSV,3);//hsvに変換
+    cv::cvtColor(board_clone,board_clone,CV_BGR2HSV,3); //hsvに変換
     vector<vector<int> >blocks_color(20,vector<int>(20,1));
     for(int yi=0;yi<20;++yi)for(int xj=0;xj<20;++xj){
         cv::Mat block=board_split[yi][xj];
@@ -91,6 +87,7 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
         //計算量的に前者をとる -> 光の反射で誤りが発生
         //現時点で対処法は撮影時に強い光を入れないようにすること
         cv::Vec3b color=block.at<cv::Vec3b>(split_size/2,split_size/2);//中心の色(hsv)
+        if(yi==19 && xj==0)printf("%d %d %d\n", color[0],color[1],color[2]);
         blocks_color[yi][xj]=BlockColor(color);
     }
     return blocks_color;
@@ -150,7 +147,6 @@ void DisplayAnswer(cv::Point point, Block block, int color){
             }
         }
     }
-    cv::imwrite("./pictures/help.jpg",dst);
 
 
 }
@@ -180,9 +176,9 @@ int BlockColor(cv::Vec3b color){
     bool reds= (50<=color[1] && color[1]<=255);
     bool redv= (80<=color[2] && color[2]<=255);
     bool red=redh && reds && redv;
-    bool blue=(83<=color[0] && color[0]<=139) &&
+    bool blue=(80<=color[0] && color[0]<=139) &&
                (50<=color[1] && color[1]<=255) && 
-                (75<=color[2] && color[2]<=255);
+                (65<=color[2] && color[2]<=255);
     if(none){
         return 0;
     }
