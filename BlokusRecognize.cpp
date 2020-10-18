@@ -45,12 +45,12 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
         double epsilon=0.005*cv::arcLength(hull,true);
         
         cv::approxPolyDP(hull,rect_vertexes,epsilon,true);
+
+        }
         if(rect_vertexes.size()!=4){
             vector<vector<int>> NULL_RETURN_VALUE;
             return NULL_RETURN_VALUE;
         }
-        }
-
     //ソートを実装する
     std::sort(rect_vertexes.begin(),rect_vertexes.end(),comparey);
     std::sort(rect_vertexes.begin(), rect_vertexes.begin()+2,comparex);
@@ -58,12 +58,11 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
     /* 正方形に変換する:*/
 
     //まず上で求めた盤の角の順番を扱いやすい順番に並べる
-    vector<cv::Point2f> before={rect_vertexes[0],rect_vertexes[2],rect_vertexes[1],rect_vertexes[3]};
-    cv::Mat dst=cv::Mat::zeros(_size,_size,CV_8UC3);//変換後の行列
+    vector<cv::Point2f> before={rect_vertexes[0],rect_vertexes[1],rect_vertexes[2],rect_vertexes[3]};
+    dst=cv::Mat::zeros(_size,_size,CV_8UC3);//変換後の行列
     //変換後の座標(転置行列)
     vector<cv::Point2f> after={cv::Point(0,0),cv::Point(_size,0),cv::Point(0,_size),cv::Point(_size,_size)};
-    cv::namedWindow("test",1);
-    cv::imshow("test",img);
+
     //homography 行列を計算
     const cv::Mat homography_matrix=cv::getPerspectiveTransform(before,after);
     //透視変換
@@ -74,7 +73,7 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
     int b_width=dst.cols*ratio,b_height=dst.rows*ratio;
     cv::Rect roi(cv::Point(pt_x,pt_y),cv::Size(b_width,b_height));
     board=dst(roi);
-
+    cv::imwrite("./pictures/help.jpg",img);
     cv::Mat board_clone=board.clone();
     /* 縦横をそれぞれ20分割 */
     int split_size=(int)(board.cols/20);
@@ -83,7 +82,6 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
         cv::Rect roi(cv::Point(split_size*xj,split_size*yi),cv::Size(split_size,split_size));
         board_split[yi][xj]=board_clone(roi);
     }
-
     
     cv::cvtColor(board_clone,board_clone,CV_BGR2HSV,3);//hsvに変換
     vector<vector<int> >blocks_color(20,vector<int>(20,1));
@@ -152,7 +150,7 @@ void DisplayAnswer(cv::Point point, Block block, int color){
             }
         }
     }
-
+    cv::imwrite("./pictures/help.jpg",dst);
 
 
 }
@@ -221,7 +219,7 @@ cv::Point maxPoint(vector<cv::Point> contours){
 
 cv::Mat DisplayAnswerInOriginalPic(){
     cv::Mat img3;
-    if(rect_vertexes.size()==0){
+    if(rect_vertexes.size()!=4){
         //printf("ERROR: NO BOARD WAS READ.\n");
         return img3;
     }
@@ -236,11 +234,10 @@ cv::Mat DisplayAnswerInOriginalPic(){
     vector<cv::Point2f> after={cv::Point(0,0),cv::Point(_size,0),cv::Point(0,_size),cv::Point(_size,_size)};
     //homography 行列を計算
     const cv::Mat homography_matrix=cv::getPerspectiveTransform(after,before);
-
     
+
     //透視変換
     warpPerspective(dst,img2, homography_matrix,img2.size());
-
     //現在img2にはボードの部分だけ表示されていてほかが黒くなっっている
     cv::Mat mask_answer=img2.clone();
     cv::cvtColor(mask_answer, mask_answer, CV_RGB2GRAY); //グレイスケール
