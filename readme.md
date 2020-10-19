@@ -3,5 +3,5 @@
 作品名： Blokus_recognize<br>
 作品紹介： opencvを用いてブロックスというボードゲームの盤面を認識し、最適な手を計算するアプリケーションです。
 これを使えばコンピュータと一人で対戦できるようになります. また, 対人戦でちょっぴり有利になることができるかもしれません.
-![スクリーンショット（Web用）](./Blokus_recognize/pictures/demopicture3.png)
+![スクリーンショット（Web用）](Blokus_recognize/pictures/demopicture3.png)
 
