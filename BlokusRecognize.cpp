@@ -17,12 +17,17 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
     cv::Scalar s_max=cv::Scalar(H_MAX, S_MAX, V_MAX);
     cv::Scalar s_min=cv::Scalar(H_MIN, S_MIN, V_MIN);
     cv::inRange(hsv, s_min, s_max, mask);
-
+    input.copyTo(output,mask);
+    cv::cvtColor(output, gray, CV_RGB2GRAY); //グレイスケール
+    cv::threshold(gray,binary,th,255,cv::THRESH_BINARY);//２値化
+    cv::namedWindow("mask",1);
+    cv::imshow("mask",binary);
+    cv::waitKey(2);
     //findContours
     vector<vector<cv::Point> > contours;
     vector<cv::Vec4i> hierarchy;
     vector<cv::Point> hull;
-    cv::findContours(mask,contours,hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    cv::findContours(binary,contours,hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
     //binary.release();
     img2=input.clone();
     img=input.clone();
@@ -39,7 +44,6 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
         }
         cv::convexHull(contours[i],hull);
         double epsilon=alpha*cv::arcLength(hull,true);
-        printf("rect_vertexes.size():%d\n",(int)rect_vertexes.size());
         cv::approxPolyDP(hull,rect_vertexes,epsilon,true);
 
         }
@@ -87,7 +91,6 @@ vector<vector<int> > BlokusRecognize(cv::Mat &input){
         //計算量的に前者をとる -> 光の反射で誤りが発生
         //現時点で対処法は撮影時に強い光を入れないようにすること
         cv::Vec3b color=block.at<cv::Vec3b>(split_size/2,split_size/2);//中心の色(hsv)
-        if(yi==19 && xj==0)printf("%d %d %d\n", color[0],color[1],color[2]);
         blocks_color[yi][xj]=BlockColor(color);
     }
     return blocks_color;
@@ -234,7 +237,7 @@ cv::Mat DisplayAnswerInOriginalPic(){
 
     //透視変換
     warpPerspective(dst,img2, homography_matrix,img2.size());
-    //現在img2にはボードの部分だけ表示されていてほかが黒くなっっている
+
     cv::Mat mask_answer=img2.clone();
     cv::cvtColor(mask_answer, mask_answer, CV_RGB2GRAY); //グレイスケール
     cv::threshold(mask_answer,mask_answer, 1, 255, cv::THRESH_BINARY);//２値化

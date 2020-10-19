@@ -50,7 +50,6 @@ int main(int argc, char *argv[]){
             break;
         }
         Board board=BlokusRecognize(frame);
-        if(!board.empty())cout<<board[19][0]<<endl;
         Block ans;
         Point ans_p;
         ans_p=findOptimalMove(board,now,ans);
